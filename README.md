@@ -70,7 +70,7 @@ cd /path/to/expenso
 python -m streamlit run frontend/app.py
 ```
 
-Opens at: http://localhost:8501
+Opens at: [http://localhost:8501] (https://expenso.streamlit.app/)
 
 ---
 
