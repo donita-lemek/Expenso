@@ -1,0 +1,68 @@
+steps:
+  # ── Backend ──────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/backend:$COMMIT_SHA
+      - ./backend
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/backend:$COMMIT_SHA
+
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - run
+      - deploy
+      - expenso-backend
+      - --image
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/backend:$COMMIT_SHA
+      - --region
+      - asia-south1
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --memory
+      - 1Gi
+      - --timeout
+      - "120"
+      - --set-secrets
+      - ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,MONGODB_URL=MONGODB_URL:latest,GCP_BUCKET_NAME=GCP_BUCKET_NAME:latest
+
+  # ── Frontend ─────────────────────────────────────────────
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/frontend:$COMMIT_SHA
+      - ./frontend
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/frontend:$COMMIT_SHA
+
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - run
+      - deploy
+      - expenso-frontend
+      - --image
+      - asia-south1-docker.pkg.dev/expenso-app/expenso/frontend:$COMMIT_SHA
+      - --region
+      - asia-south1
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8501"
+      - --memory
+      - 1Gi
+      - --set-secrets
+      - FASTAPI_URL=FASTAPI_URL:latest
+
+images:
+  - asia-south1-docker.pkg.dev/expenso-app/expenso/backend:$COMMIT_SHA
+  - asia-south1-docker.pkg.dev/expenso-app/expenso/frontend:$COMMIT_SHA
