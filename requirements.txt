@@ -9,8 +9,4 @@ streamlit>=1.36.0
 plotly==5.22.0
 pandas==2.2.2
 pydantic==2.7.1
-google-cloud-storage==2.16.0
-google-cloud-secret-manager==2.20.0
 google-generativeai==0.5.4
-motor==3.4.0
-pymongo==4.6.3

@@ -1,12 +1,12 @@
 """
 backend/routes/audit.py
 On-demand re-run of the audit pipeline for a specific claim.
-Updated for MongoDB.
+Local In-Memory Database.
 """
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from datetime import datetime
 import sys, os
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.database import get_database
@@ -14,7 +14,7 @@ from backend.database import get_database
 router = APIRouter(prefix="/audit", tags=["audit"])
 
 @router.post("/run/{claim_id}")
-async def rerun_audit(claim_id: str, background_tasks: BackgroundTasks, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def rerun_audit(claim_id: str, background_tasks: BackgroundTasks, db: Any = Depends(get_database)):
     from backend.routes.claims import run_full_pipeline
 
     doc = await db.claims.find_one({"claim_id": claim_id})

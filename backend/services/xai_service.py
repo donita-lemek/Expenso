@@ -189,7 +189,7 @@ def build_audit_trail(pipeline: dict) -> List[Dict[str, Any]]:
     # ── CLAIM_UPDATED ─────────────────────────────────────
     trail.append(_event(
         "CLAIM_UPDATED",
-        f"MongoDB updated for claim {pipeline.get('claim_id', 'N/A')} with full audit results.",
+        f"Local Database updated for claim {pipeline.get('claim_id', 'N/A')} with full audit results.",
         {"claim_id": pipeline.get("claim_id")},
     ))
 

@@ -17,10 +17,8 @@ AI-powered OCR, forensic authenticity scoring, policy compliance checking, and a
 | AI — Text | Google Gemini `gemini-1.5-pro` (Policy Audit + XAI) |
 | Currency | frankfurter.app (free, no key needed) |
 | Duplicate Detection | imagehash + Pillow (3-layer: SHA256 + pHash + Semantic) |
-| File Storage | GCP Cloud Storage (local: base64 fallback) |
-| Secrets | GCP Secret Manager (local: .env fallback) |
-| Deployment | GCP Cloud Run (2 services: frontend + backend) |
-| CI/CD | GitHub Actions → GCP Cloud Build |
+| File Storage | Local Base64 (No cloud bucket needed) |
+| Secrets | Local .env (No secret manager needed) |
 
 ---
 

@@ -1,14 +1,13 @@
 """
 backend/routes/claims.py
 All claim endpoints + background pipeline orchestration.
-Updated for MongoDB.
+Local In-Memory Database.
 """
 import asyncio
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -25,7 +24,7 @@ from backend.services.xai_service import build_audit_trail
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 
-async def run_full_pipeline(claim_id: str, image_bytes: bytes, receipt_filename: str, db: AsyncIOMotorDatabase):
+async def run_full_pipeline(claim_id: str, image_bytes: bytes, receipt_filename: str, db: Any):
     try:
         claim = await db.claims.find_one({"claim_id": claim_id})
         if not claim: return
@@ -135,7 +134,7 @@ async def run_full_pipeline(claim_id: str, image_bytes: bytes, receipt_filename:
 @router.post("/submit")
 async def submit_claim(
     background_tasks: BackgroundTasks,
-    db: AsyncIOMotorDatabase = Depends(get_database),
+    db: Any = Depends(get_database),
     employee_id: str = Form(...), employee_name: str = Form(...), employee_email: str = Form(...),
     city: str = Form(...), city_tier: str = Form(...), category: str = Form(...),
     claimed_amount: float = Form(...), original_currency: str = Form(...), business_purpose: str = Form(...),
@@ -187,7 +186,7 @@ async def submit_claim(
 @router.get("/")
 async def list_claims(
     status: Optional[str] = None, category: Optional[str] = None, employee_id: Optional[str] = None, 
-    search: Optional[str] = None, db: AsyncIOMotorDatabase = Depends(get_database)
+    search: Optional[str] = None, db: Any = Depends(get_database)
 ):
     query = {}
     statuses = [s.strip() for s in status.split(",")] if status else []
@@ -214,14 +213,14 @@ async def list_claims(
     return res
 
 @router.get("/{claim_id}")
-async def get_claim(claim_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def get_claim(claim_id: str, db: Any = Depends(get_database)):
     doc = await db.claims.find_one({"claim_id": claim_id})
     if not doc: raise HTTPException(404)
     doc.pop("_id", None)
     return doc
 
 @router.post("/{claim_id}/override")
-async def override_claim(claim_id: str, override: OverrideRequest, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def override_claim(claim_id: str, override: OverrideRequest, db: Any = Depends(get_database)):
     doc = await db.claims.find_one({"claim_id": claim_id})
     if not doc: raise HTTPException(404)
     await db.claims.update_one(
@@ -234,19 +233,19 @@ async def override_claim(claim_id: str, override: OverrideRequest, db: AsyncIOMo
     return {"message": "Success"}
 
 @router.delete("/{claim_id}")
-async def delete_claim(claim_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def delete_claim(claim_id: str, db: Any = Depends(get_database)):
     res = await db.claims.delete_one({"claim_id": claim_id})
     if res.deleted_count == 0: raise HTTPException(404)
     return {"message": "Deleted"}
 
 @router.get("/{claim_id}/audit-trail")
-async def get_audit_trail(claim_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def get_audit_trail(claim_id: str, db: Any = Depends(get_database)):
     doc = await db.claims.find_one({"claim_id": claim_id})
     if not doc: raise HTTPException(404)
     return {"claim_id": claim_id, "audit_trail": doc.get("audit_trail", [])}
 
 @router.get("/{claim_id}/xai-report")
-async def get_xai_report(claim_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def get_xai_report(claim_id: str, db: Any = Depends(get_database)):
     doc = await db.claims.find_one({"claim_id": claim_id})
     if not doc: raise HTTPException(404)
     doc.pop("_id", None)

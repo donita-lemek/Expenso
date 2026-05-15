@@ -9,16 +9,16 @@ import sys, os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from backend.database import connect_to_mongo, close_mongo_connection
+from backend.database import connect_to_db, close_db_connection
 from backend.routes import claims, policy, employees, audit
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
-    await connect_to_mongo()
+    await connect_to_db()
     yield
-    await close_mongo_connection()
+    await close_db_connection()
 
 
 app = FastAPI(

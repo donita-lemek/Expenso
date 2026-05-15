@@ -1,13 +1,13 @@
 """
 backend/routes/employees.py
 Employee listing and budget endpoints.
-Updated for MongoDB.
+Local In-Memory Database.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from backend.services.currency_service import convert_currency
 import sys, os
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.database import get_database
@@ -15,14 +15,14 @@ from backend.database import get_database
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 @router.get("/")
-async def list_employees(db: AsyncIOMotorDatabase = Depends(get_database)):
+async def list_employees(db: Any = Depends(get_database)):
     employees = await db.employees.find().to_list(length=None)
     for e in employees:
         e.pop("_id", None)
     return employees
 
 @router.get("/{employee_id}/budget")
-async def get_employee_budget(employee_id: str, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def get_employee_budget(employee_id: str, db: Any = Depends(get_database)):
     employee = await db.employees.find_one({"employee_id": employee_id})
     if not employee:
         raise HTTPException(status_code=404, detail=f"Employee {employee_id} not found")

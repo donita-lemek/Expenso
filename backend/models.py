@@ -1,6 +1,6 @@
 """
 backend/models.py
-Pydantic v2 models for all MongoDB collections and API I/O.
+Pydantic v2 models for database collections and API I/O.
 """
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any

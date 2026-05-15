@@ -13,10 +13,10 @@ from typing import Any, Dict, Optional
 from io import BytesIO
 
 
-# ── MongoDB serialization ─────────────────────────────────
+# ── Local Database serialization ─────────────────────────────────
 
 def serialize_doc(doc: Dict) -> Dict:
-    """Convert MongoDB document: ObjectId → str, datetime → ISO string."""
+    """Convert database document: ObjectId → str, datetime → ISO string."""
     if doc is None:
         return {}
     result = {}
@@ -58,40 +58,15 @@ def compute_sha256(image_bytes: bytes) -> str:
 
 def upload_to_gcs(image_bytes: bytes, filename: str) -> str:
     """
-    Upload image to GCP Cloud Storage and return a signed URL.
-    Falls back to a base64 data URI in local dev (ENV=local).
+    Returns a base64 data URI for the provided image bytes.
+    Used for local execution without GCP Cloud Storage.
     """
-    env = os.getenv("ENV", "local")
-
-    if env == "local":
-        # Local fallback: store as base64 data URI
-        ext = filename.rsplit(".", 1)[-1].lower()
-        mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg",
-                    "png": "image/png", "pdf": "application/pdf"}
-        mime = mime_map.get(ext, "application/octet-stream")
-        b64 = base64.b64encode(image_bytes).decode("utf-8")
-        return f"data:{mime};base64,{b64}"
-
-    try:
-        from google.cloud import storage
-        bucket_name = os.getenv("GCP_BUCKET_NAME", "expenso-receipts")
-        client = storage.Client()
-        bucket = client.bucket(bucket_name)
-        blob = bucket.blob(f"receipts/{filename}")
-        blob.upload_from_string(image_bytes, content_type="image/jpeg")
-
-        # Return a signed URL valid for 1 hour
-        from datetime import timedelta
-        url = blob.generate_signed_url(expiration=timedelta(hours=1), method="GET")
-        return url
-    except Exception as e:
-        print(f"⚠️  GCS upload failed, falling back to base64: {e}")
-        ext = filename.rsplit(".", 1)[-1].lower()
-        mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg",
-                    "png": "image/png", "pdf": "application/pdf"}
-        mime = mime_map.get(ext, "application/octet-stream")
-        b64 = base64.b64encode(image_bytes).decode("utf-8")
-        return f"data:{mime};base64,{b64}"
+    ext = filename.rsplit(".", 1)[-1].lower()
+    mime_map = {"jpg": "image/jpeg", "jpeg": "image/jpeg",
+                "png": "image/png", "pdf": "application/pdf"}
+    mime = mime_map.get(ext, "application/octet-stream")
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+    return f"data:{mime};base64,{b64}"
 
 
 # ── JSON parsing ──────────────────────────────────────────

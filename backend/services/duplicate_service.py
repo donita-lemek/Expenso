@@ -1,15 +1,14 @@
 """
 backend/services/duplicate_service.py
 Three-layer duplicate detection: exact SHA256, perceptual hash, semantic match.
-Updated for MongoDB.
+Local In-Memory Database.
 """
 import imagehash
 from PIL import Image
 from io import BytesIO
-from typing import Optional
+from typing import Optional, Any
 import sys
 import os
-from motor.motor_asyncio import AsyncIOMotorDatabase
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.utils.helpers import compute_sha256
@@ -21,7 +20,7 @@ async def check_duplicate(
     merchant: Optional[str],
     transaction_date: Optional[str],
     claimed_amount: float,
-    db: AsyncIOMotorDatabase,
+    db: Any,
 ) -> dict:
     existing = await db.claims.find_one({"sha256": new_sha256})
     if existing:

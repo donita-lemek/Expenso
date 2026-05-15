@@ -1,12 +1,12 @@
 """
 backend/routes/policy.py
 Policy management endpoints.
-Updated for MongoDB.
+Local In-Memory Database.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 import sys, os
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from typing import Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 from backend.database import get_database
@@ -15,7 +15,7 @@ from backend.models import PolicyCreate
 router = APIRouter(prefix="/policy", tags=["policy"])
 
 @router.post("/upload")
-async def upload_policy(policy: PolicyCreate, db: AsyncIOMotorDatabase = Depends(get_database)):
+async def upload_policy(policy: PolicyCreate, db: Any = Depends(get_database)):
     await db.policy.update_many({"is_active": True}, {"$set": {"is_active": False}})
 
     doc_data = {
@@ -29,7 +29,7 @@ async def upload_policy(policy: PolicyCreate, db: AsyncIOMotorDatabase = Depends
     return {"message": "Policy uploaded and activated."}
 
 @router.get("/active")
-async def get_active_policy(db: AsyncIOMotorDatabase = Depends(get_database)):
+async def get_active_policy(db: Any = Depends(get_database)):
     policy = await db.policy.find_one({"is_active": True})
     if not policy:
         raise HTTPException(status_code=404, detail="No active policy found.")
